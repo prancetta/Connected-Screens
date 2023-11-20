@@ -1,0 +1,25 @@
+#include <Servo.h>
+#include <Firmata.h>
+
+Servo myServo;
+
+void setup() {
+  Firmata.setFirmwareVersion(FIRMATA_FIRMWARE_MAJOR_VERSION, FIRMATA_FIRMWARE_MINOR_VERSION);
+  Firmata.attach(ANALOG_MESSAGE, analogWriteCallback);
+  Firmata.begin(57600);
+
+  myServo.attach(2);  // Attach the servo to pin D2
+}
+
+void loop() {
+  while (Firmata.available()) {
+    Firmata.processInput();
+  }
+}
+
+void analogWriteCallback(byte pin, int value) {
+  if (pin == 2) {
+    int servoPos = map(value, 0, 255, 0, 180);  // Map the value to the servo's range
+    myServo.write(servoPos);
+  }
+}
