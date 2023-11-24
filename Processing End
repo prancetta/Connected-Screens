@@ -1,3 +1,7 @@
+// This code utilises the OpenCV - FaceX to Servo module as its basic framework, 
+// It was tweaked to use faceProximity instead of faceX for input with help from ChatGPT.
+// Juan Sulca rewrote the proximity formula to use faceY value to determine faceHeight, for which he has our deepest gratitude.
+
 import processing.serial.*;
 import cc.arduino.*;
 import gab.opencv.*;
@@ -15,10 +19,10 @@ int servoAngle_value;
 int faceX; // X-coordinate of the face center
 int faceY; // Y-coordinate of the face center
 // Used for converting from pixels to angles
-int minServoAngle = 0;
-int maxServoAngle = 180;
+int minServoAngle = 180;
+int maxServoAngle = 0;
 
-int cameraIndex = 0; // default camera index, change this to select different camera
+int cameraIndex = 1; // default camera index, change this to select different camera
 
 void setup() {
   size(640, 480);  // Window size for video capture
@@ -44,7 +48,7 @@ void setup() {
   arduino.pinMode(servoPin2, Arduino.SERVO);
 
   // Setup for OpenCV and video capture
-  video = new Capture(this, cameras[cameraIndex]);
+  video = new Capture(this, 640, 480, cameras[cameraIndex]);
   opencv = new OpenCV(this, 640, 480);
   opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);
   video.start();
@@ -66,7 +70,7 @@ void draw() {
     rect(faces[0].x, faces[0].y, faces[0].width, faces[0].height);
 
     // Convert proximity to a servo angle
-    servoAngle_value = round(map(proximity, 0, width / 2, minServoAngle, maxServoAngle));
+    servoAngle_value = round(map(faces[0].height, 10, 2*height/3, minServoAngle, maxServoAngle));
 
     // Set both servos to the calculated angle
     arduino.servoWrite(servoPin1, servoAngle_value);
